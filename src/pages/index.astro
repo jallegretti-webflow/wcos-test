@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import FileUploader from '../components/FileUploader';
 
 const baseUrl = import.meta.env.BASE_URL;
-const assetsPrefix = process.env.ASSETS_PREFIX;
+const assetsPrefix = import.meta.env.ASSETS_PREFIX;
 ---
 
 <Layout>
