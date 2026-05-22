@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
 
+function buildApiUrl(path: string, base = import.meta.env.BASE_URL): string {
+  const normalizedBase = base.endsWith("/") ? base : `${base}/`;
+  return new URL(path, new URL(normalizedBase, location.origin)).toString();
+}
+
 interface FileData {
   name?: string;
   dateUploaded?: string;
@@ -70,7 +75,7 @@ export default function FileUploader() {
   const loadFiles = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.BASE_URL}/api/list-assets`);
+      const response = await fetch(buildApiUrl("api/list-assets"));
 
       if (!response.ok) {
         throw new Error("Failed to load files");
@@ -119,7 +124,7 @@ export default function FileUploader() {
       formData.append("file", file);
 
 
-      const response = await fetch(`${import.meta.env.BASE_URL}/api/upload`, {
+      const response = await fetch(buildApiUrl("api/upload"), {
         method: "POST",
         body: formData,
       });
@@ -154,14 +159,13 @@ export default function FileUploader() {
     setProgress(0);
 
     try {
-      const assetsPrefix = import.meta.env.ASSETS_PREFIX || "";
-      const BASE_CF_URL = `${assetsPrefix}/api/multipart-upload`;
+      const BASE_CF_URL = buildApiUrl("api/multipart-upload", import.meta.env.ASSETS_PREFIX || import.meta.env.BASE_URL);
       const key = file.name;
       const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
       const totalParts = Math.ceil(file.size / CHUNK_SIZE);
 
       // Step 1: Initiate upload
-      const createUploadUrl = new URL(BASE_CF_URL, window.location.origin);
+      const createUploadUrl = new URL(BASE_CF_URL);
       createUploadUrl.searchParams.append("action", "create");
 
       const createResponse = await fetch(createUploadUrl, {
@@ -175,7 +179,7 @@ export default function FileUploader() {
 
       // Step 2: Upload parts
       const partsData = [];
-      const uploadPartUrl = new URL(BASE_CF_URL, window.location.origin);
+      const uploadPartUrl = new URL(BASE_CF_URL);
       uploadPartUrl.searchParams.append("action", "upload-part");
       uploadPartUrl.searchParams.append("uploadId", uploadId);
       uploadPartUrl.searchParams.append("key", key);
@@ -206,7 +210,7 @@ export default function FileUploader() {
       }
 
       // Step 3: Complete upload
-      const completeUploadUrl = new URL(BASE_CF_URL, window.location.origin);
+      const completeUploadUrl = new URL(BASE_CF_URL);
       completeUploadUrl.searchParams.append("action", "complete");
 
       const completeResponse = await fetch(completeUploadUrl, {
@@ -527,7 +531,7 @@ export default function FileUploader() {
               const fileLink =
                 file.link ||
                 (file.key
-                  ? `${import.meta.env.ASSETS_PREFIX}/api/asset?key=${file.key}`
+                  ? buildApiUrl(`api/asset?key=${encodeURIComponent(file.key)}`, import.meta.env.ASSETS_PREFIX || import.meta.env.BASE_URL)
                   : "");
               const uploadDate =
                 file.dateUploaded || file.uploaded || new Date().toISOString();
