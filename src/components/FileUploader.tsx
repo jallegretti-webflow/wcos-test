@@ -11,13 +11,12 @@ interface FileData {
   };
 }
 
-interface FileUploaderProps {
-  mountPath?: string;
-}
-
-export default function FileUploader({ mountPath = "/" }: FileUploaderProps) {
+export default function FileUploader() {
+  const base = import.meta.env.BASE_URL.endsWith("/")
+    ? import.meta.env.BASE_URL
+    : `${import.meta.env.BASE_URL}/`;
   const apiBase =
-    typeof window !== "undefined" ? window.location.origin + mountPath : mountPath;
+    (typeof window !== "undefined" ? window.location.origin : "") + base;
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [files, setFiles] = useState<FileData[]>([]);

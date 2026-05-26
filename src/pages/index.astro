@@ -1,14 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import FileUploader from '../components/FileUploader';
-import { getMountPath } from '../utils/mountPath';
-
-const mountPath = getMountPath(Astro.locals);
 ---
 
 <Layout>
   <main>
-    <FileUploader client:load mountPath={mountPath} />
+    <FileUploader client:load />
   </main>
 </Layout>
 
